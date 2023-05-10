@@ -11,7 +11,6 @@ const config = {
 };
 
 const getAccessToken = asyncHandler(async (req, res) => {
-    console.log("chala");
     const existingCredentials = await ZohoApiCredentials.findOne();
     if (existingCredentials && existingCredentials.accessToken && existingCredentials.expires_in > Date.now()) {
         res.status(200).json({
