@@ -1,8 +1,11 @@
 const express = require('express');
-const {getAccessToken} = require('../controller/zohoApiCredentialController.js');
+const {getAccessToken, getInvoicesByRiderId, refreshAccessToken} = require('../controller/zohoApiCredentialController.js');
+const {isAuthenticated} = require('../middlewares/auth.js');
 
 const router = express.Router();
-router.route('/getAccessToken').post(getAccessToken);
+router.route('/refreshaccesstoken').post(refreshAccessToken);
+router.route('/getaccesstoken').get(getAccessToken, isAuthenticated);
+router.route('/getinvoicesbyid').get(getInvoicesByRiderId);
 
 
 module.exports = router;

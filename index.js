@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db.js');
 const mongoose = require('mongoose');
 const zohoApiRoutes = require('./routes/zohoApiRoutes.js');
+const suscriberRoutes  = require('./routes/suscriberRoutes.js');
 
 
 dotenv.config()
@@ -21,6 +22,7 @@ app.get('/', (req,res) => {
 
 //routes
 app.use('/api/zoho', zohoApiRoutes);
+app.use('/api/subscriber', suscriberRoutes);
 
 const PORT = process.env.PORT || 5000
 app.listen(PORT, console.log(`Server running on Port ${PORT}`))
