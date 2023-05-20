@@ -49,6 +49,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             });
             await newCredentials.save();
         }
+        console.log('Access Token Generated');
         res && res.status(200).json({
             message: "Access Token Generated",
         });
