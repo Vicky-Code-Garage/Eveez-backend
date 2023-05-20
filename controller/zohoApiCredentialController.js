@@ -4,11 +4,13 @@ const asyncHandler = require('express-async-handler');
 const cron = require('node-cron');
 const { logroute } = require('../logger/lgs');
 const Rider = require('../model/rider');
+const { get } = require('mongoose');
+const { response } = require('express');
 
 const config = {
     clientId: '1000.7TCQSN7RJ40147QHNIC13HK1MVVITZ',
     clientSecret: '7a2d9838f58a4edb2c75b185311dcab2b282245c21',
-    refreshToken: '1000.d2f15885e1ebee4365715213e29cd27e.4461b178ee8ed95f0e58785b5c5b84a3',
+    refreshToken: '1000.e658034007f4a349947e4cdc71e84257.8c4d7797830d60534ffdb65ae57d336d',
     baseUrl: 'https://accounts.zoho.in',
 };
 
@@ -121,10 +123,59 @@ async function getInvoicesByRiderId(req, res) {
     }
 }
 
+async function createPaymentByInvoiceId(req, res) {
+    logroute(req);
+    try {
+        let credentials = await ZohoApiCredentials.findOne();
+        const {
+            customer_id, 
+            payment_mode, 
+            amount, 
+            date, 
+            invoice_no, 
+            invoice_id } = req.body;
+            
+        let data = JSON.stringify({
+            "customer_id": customer_id,
+            "payment_mode": payment_mode,
+            "amount": amount,
+            "date": date,
+            "reference_number": invoice_no,
+            "description": `Payment has been added to ${invoice_no}`,
+            "invoices": [
+              {
+                "invoice_id": invoice_id,
+                "amount_applied": amount
+              }
+            ],
+            "invoice_id": invoice_id,
+            "amount_applied": amount
+          });
+          
+          let config = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: 'https://www.zohoapis.in/books/v3/customerpayments?organization_id=60021321831',
+            headers: { 
+              'content-type': 'application/json', 
+              'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
+            },
+            data : data
+          };
+
+          const response = await axios.request(config);
+          res.status(200).json(response.data);
+    } catch (error) {
+        res.status(500).send(`Error: ${error}`);
+    }
+}
+
+
 
 
 module.exports = {
     refreshAccessToken,
     getAccessToken,
-    getInvoicesByRiderId
+    getInvoicesByRiderId,
+    createPaymentByInvoiceId
 }
