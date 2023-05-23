@@ -72,7 +72,7 @@ subscriberSchema.pre('save', function (next) {
         .toString('hex')
         .toUpperCase()
         .replace(/[A-F]/g, '');
-      doc.subscriber_id = `ABC${randomID}`;
+      doc.subscriber_id = `SUB${randomID}`;
     }
     next();
   });

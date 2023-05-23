@@ -6,6 +6,12 @@ const { logroute } = require('../logger/lgs');
 const Rider = require('../model/rider');
 const { get } = require('mongoose');
 const { response } = require('express');
+const Razorpay = require('razorpay');
+
+const razorpay = new Razorpay({
+    key_id: 'rzp_test_puAwTlXafJgAY8',
+    key_secret: 'bPLvPW1L0ATVkNEFBAiafJyS'
+});
 
 const config = {
     clientId: '1000.7TCQSN7RJ40147QHNIC13HK1MVVITZ',
@@ -60,7 +66,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 })
 // Schedule the cron job to refresh the access token every 55 minutes
-cron.schedule('0 */55 * * * *',()=>{
+cron.schedule('0 */55 * * * *', () => {
     refreshAccessToken(
         req = null,
         res = null
@@ -115,10 +121,10 @@ async function getInvoicesByRiderId(req, res) {
         }
         const response = await axios.get(
             `https://www.zohoapis.in/books/v3/invoices`,
-            {headers, params}
+            { headers, params }
         );
         res.status(200).json(response.data);
-    }catch(error){  
+    } catch (error) {
         res.status(500).send(`Error: ${error}`);
     }
 }
@@ -128,13 +134,13 @@ async function createPaymentByInvoiceId(req, res) {
     try {
         let credentials = await ZohoApiCredentials.findOne();
         const {
-            customer_id, 
-            payment_mode, 
-            amount, 
-            date, 
-            invoice_no, 
+            customer_id,
+            payment_mode,
+            amount,
+            date,
+            invoice_no,
             invoice_id } = req.body;
-            
+
         let data = JSON.stringify({
             "customer_id": customer_id,
             "payment_mode": payment_mode,
@@ -143,32 +149,98 @@ async function createPaymentByInvoiceId(req, res) {
             "reference_number": invoice_no,
             "description": `Payment has been added to ${invoice_no}`,
             "invoices": [
-              {
-                "invoice_id": invoice_id,
-                "amount_applied": amount
-              }
+                {
+                    "invoice_id": invoice_id,
+                    "amount_applied": amount
+                }
             ],
             "invoice_id": invoice_id,
             "amount_applied": amount
-          });
-          
-          let config = {
+        });
+
+        let config = {
             method: 'post',
             maxBodyLength: Infinity,
             url: 'https://www.zohoapis.in/books/v3/customerpayments?organization_id=60021321831',
-            headers: { 
-              'content-type': 'application/json', 
-              'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
             },
-            data : data
-          };
+            data: data
+        };
 
-          const response = await axios.request(config);
-          res.status(200).json(response.data);
+        const response = await axios.request(config);
+        res.status(200).json(response.data);
     } catch (error) {
-        res.status(500).send(`Error: ${error}`);
+        res.status(500).send(`Error: ${error.message}`);
     }
 }
+
+
+async function createOrder(req, res) {
+    logroute(req);
+    const { amount, 
+            currency,
+            customer_id,
+            payment_mode,
+            date,
+            invoice_no,
+            invoice_id } = req.body;
+
+    const options = {
+        amount: amount * 100, // Razorpay expects amount in paise (1 INR = 100 paise)
+        currency: currency,
+        receipt: invoice_id, // A unique identifier for the order,
+    };
+
+    try {
+        let data = JSON.stringify({
+            customer_id: customer_id,
+            payment_mode: payment_mode,
+            amount: amount,
+            date: date,
+            invoice_no: invoice_no,
+            invoice_id: invoice_id
+        });
+
+        let config = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: 'http://localhost:5000/api/zoho/createpayment',
+            headers: {
+                'content-type': 'application/json',
+            },
+            data: data
+        };
+
+        const response = await axios.request(config);
+        const order = await razorpay.orders.create(options);
+        res.json({
+            razorpay: order,
+            zoho: response.data
+        });
+    } catch (error) {
+        res.status(500).json({ error: `hsbh ${error.message}` });
+    }
+}
+
+async function verifyPayment(req, res) {
+    const { order_id, payment_id, signature } = req.body;
+
+    const generatedSignature = crypto
+        .createHmac('sha256', 'bPLvPW1L0ATVkNEFBAiafJyS')
+        .update(`${order_id}|${payment_id}`)
+        .digest('hex');
+
+    if (generatedSignature === signature) {
+
+        res.json({ success: true, message: 'Payment verified successfully' });
+    } else {
+        res.json({ success: false, message: 'Payment verification failed' });
+    }
+}
+
+
 
 
 
@@ -177,5 +249,7 @@ module.exports = {
     refreshAccessToken,
     getAccessToken,
     getInvoicesByRiderId,
-    createPaymentByInvoiceId
+    createPaymentByInvoiceId,
+    createOrder,
+    verifyPayment
 }
