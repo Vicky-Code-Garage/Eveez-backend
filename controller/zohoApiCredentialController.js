@@ -9,14 +9,14 @@ const { response } = require('express');
 const Razorpay = require('razorpay');
 
 const razorpay = new Razorpay({
-    key_id: 'rzp_test_puAwTlXafJgAY8',
-    key_secret: 'bPLvPW1L0ATVkNEFBAiafJyS'
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
 const config = {
-    clientId: '1000.7TCQSN7RJ40147QHNIC13HK1MVVITZ',
-    clientSecret: '7a2d9838f58a4edb2c75b185311dcab2b282245c21',
-    refreshToken: '1000.e658034007f4a349947e4cdc71e84257.8c4d7797830d60534ffdb65ae57d336d',
+    clientId: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    refreshToken: process.env.REFRESH_TOKEN,
     baseUrl: 'https://accounts.zoho.in',
 };
 
@@ -161,7 +161,7 @@ async function createPaymentByInvoiceId(req, res) {
         let config = {
             method: 'post',
             maxBodyLength: Infinity,
-            url: 'https://www.zohoapis.in/books/v3/customerpayments?organization_id=60021321831',
+            url: `https://www.zohoapis.in/books/v3/customerpayments?${process.env.ORGANIZATION_ID}`,
             headers: {
                 'content-type': 'application/json',
                 'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
@@ -220,7 +220,7 @@ async function createOrder(req, res) {
             zoho: response.data
         });
     } catch (error) {
-        res.status(500).json({ error: `hsbh ${error.message}` });
+        res.status(500).json({ error: error });
     }
 }
 
@@ -228,7 +228,7 @@ async function verifyPayment(req, res) {
     const { order_id, payment_id, signature } = req.body;
 
     const generatedSignature = crypto
-        .createHmac('sha256', 'bPLvPW1L0ATVkNEFBAiafJyS')
+        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
         .update(`${order_id}|${payment_id}`)
         .digest('hex');
 
