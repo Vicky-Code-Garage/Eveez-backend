@@ -2,7 +2,7 @@
 
 This document provides an overview of the APIs available in your codebase and explains how to use them.
 
-# Postman Collection['https://grey-station-729392.postman.co/workspace/New-Team-Workspace~df1e99c9-6234-489b-88e6-00506710befa/collection/25506251-12f0c2d1-fa84-4bea-92e9-b40c98cdc17d?action=share&creator=25506251']
+#[Postman Collection](https://grey-station-729392.postman.co/workspace/New-Team-Workspace~df1e99c9-6234-489b-88e6-00506710befa/collection/25506251-12f0c2d1-fa84-4bea-92e9-b40c98cdc17d?action=share&creator=25506251)
 
 ## Controller Functions
 
