@@ -272,6 +272,16 @@ async function createInvoice(req, res) {
                     quantity: 1,
                 },
             ],
+            payment_options: {
+                payment_gateways: [
+                    {
+                        configured: true,
+                        additional_field1: "standard",
+                        gateway_name: "razorpay"
+                    }
+                ]
+            },
+            allow_partial_payments: true,
         });
 
         let config = {
@@ -333,7 +343,17 @@ async function createBulkInvoices(req, res) {
 
             let data = JSON.stringify({
                 customer_id: customer_id,
-                line_items: line_items
+                line_items: line_items,
+                payment_options: {
+                    payment_gateways: [
+                        {
+                            configured: true,
+                            additional_field1: "standard",
+                            gateway_name: "razorpay"
+                        }
+                    ]
+                },
+                allow_partial_payments: true,
             });
 
             let config = {
@@ -441,7 +461,17 @@ async function createDamageInvoice(req, res) {
         });
         let data = JSON.stringify({
             customer_id: customer_id,
-            line_items: convertedItems
+            line_items: convertedItems,
+            payment_options: {
+                payment_gateways: [
+                    {
+                        configured: true,
+                        additional_field1: "standard",
+                        gateway_name: "razorpay"
+                    }
+                ]
+            },
+            allow_partial_payments: true,
         });
 
         let configIn = {
