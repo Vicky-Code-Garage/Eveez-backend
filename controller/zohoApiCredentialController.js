@@ -8,6 +8,7 @@ const { get } = require('mongoose');
 const { response } = require('express');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const { log } = require('console');
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -262,104 +263,110 @@ async function createInvoice(req, res) {
     try {
         // Create the invoice object
         let credentials = await ZohoApiCredentials.findOne();
-        const { 
-            item_name, 
-            item_desc,
-            rate,
-            quantity,
-            customer_id,
-            to_email_id,
-            cc_email_ids
-        } = req.body;
-
-        let data = JSON.stringify({
-            customer_id: customer_id,
-            line_items: [
-                {
-                    name: item_name,
-                    description: item_desc,
-                    rate: rate,
-                    quantity: quantity,
-                },
-            ],
-            payment_options: {
-                payment_gateways: [
+        const items = JSON.parse(req.body.items);
+        let createdInvoices = [];
+        for(const item in items){
+            const { 
+                item_name, 
+                item_desc,
+                rate,
+                quantity,
+                customer_id,
+                to_email_id,
+                cc_email_ids
+            } = items[item];
+            if(!items[item].customer_id){
+                break;
+            }
+    
+            let data = JSON.stringify({
+                customer_id: customer_id,
+                line_items: [
                     {
-                        configured: true,
-                        additional_field1: "standard",
-                        gateway_name: "razorpay"
-                    }
-                ]
-            },
-            allow_partial_payments: true,
-        });
-
-        let config = {
-            method: 'post',
-            maxBodyLength: Infinity,
-            url: 'https://www.zohoapis.in/books/v3/invoices',
-            headers: {
-                'content-type': 'application/json',
-                'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
-            },
-            data: data
-        };
-
-        const response = await axios.request(config);
-        const createdInvoice = response.data;
-        const invoice = response.data.invoice;
-
-        let config_sent = {
-            method: 'post',
-            maxBodyLength: Infinity,
-            url: `https://www.zohoapis.in/books/v3/invoices/${invoice.invoice_id}/status/sent?organization_id=${process.env.ORGANIZATION_ID}`,
-            headers: {
-                'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
-            }
-        };
-        const response_sent = await axios.request(config_sent);
-        console.log(response_sent.data.message);
-
-        let config_email = {
-            method: 'get',
-            maxBodyLength: Infinity,
-            url: `https://www.zohoapis.in/books/v3/invoices/${invoice.invoice_id}/email?organization_id=${process.env.ORGANIZATION_ID}`,
-            headers: {
-                'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
-            },
-        };
-        const response_email = await axios.request(config_email);
-        const { body,subject }= response_email.data;
-
-        let config_email_send = {
-            method: 'post',
-            maxBodyLength: Infinity,
-            url: `https://www.zohoapis.in/books/v3/invoices/${invoice.invoice_id}/email?organization_id=${process.env.ORGANIZATION_ID}`,
-            headers: {
-                'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
-            },
-            data: {
-                    "send_from_org_email_id": false,
-                    "to_mail_ids": [
-                        to_email_id
-                    ],
-                    "cc_mail_ids": cc_email_ids.split(','),
-                    "subject": subject,
-                    "body": body
-            }
-        };
-        const response_email_send = await axios.request(config_email_send);
-        console.log(response_email_send.data.message);
-            
-
+                        name: item_name,
+                        description: item_desc,
+                        rate: rate,
+                        quantity: quantity,
+                    },
+                ],
+                payment_options: {
+                    payment_gateways: [
+                        {
+                            configured: true,
+                            additional_field1: "standard",
+                            gateway_name: "razorpay"
+                        }
+                    ]
+                },
+                allow_partial_payments: false,
+            });
+    
+            let config = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                url: 'https://www.zohoapis.in/books/v3/invoices',
+                headers: {
+                    'content-type': 'application/json',
+                    'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
+                },
+                data: data
+            };
+    
+            const response = await axios.request(config);
+            const invoice = response.data.invoice;
+            createdInvoices.push(invoice);
+    
+            let config_sent = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                url: `https://www.zohoapis.in/books/v3/invoices/${invoice.invoice_id}/status/sent?organization_id=${process.env.ORGANIZATION_ID}`,
+                headers: {
+                    'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
+                }
+            };
+            const response_sent = await axios.request(config_sent);
+            console.log(response_sent.data.message);
+    
+            let config_email = {
+                method: 'get',
+                maxBodyLength: Infinity,
+                url: `https://www.zohoapis.in/books/v3/invoices/${invoice.invoice_id}/email?organization_id=${process.env.ORGANIZATION_ID}`,
+                headers: {
+                    'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
+                },
+            };
+            const response_email = await axios.request(config_email);
+            const { body,subject }= response_email.data;
+    
+            let config_email_send = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                url: `https://www.zohoapis.in/books/v3/invoices/${invoice.invoice_id}/email?organization_id=${process.env.ORGANIZATION_ID}`,
+                headers: {
+                    'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
+                },
+                data: {
+                        "send_from_org_email_id": false,
+                        "to_mail_ids": [
+                            to_email_id
+                        ],
+                        "cc_mail_ids": cc_email_ids.split(','),
+                        "subject": subject,
+                        "body": body
+                }
+            };
+            const response_email_send = await axios.request(config_email_send);
+            console.log(response_email_send.data.message);
+        }
         res.status(200).json({
             message: 'Invoice created successfully and sent to customer',
-            invoice: createdInvoice
+            invoice: createdInvoices
         });
+        
     } catch (error) {
-        console.error('Error creating invoice:', error);
+        console.error('Error creating invoice:', error.response.data ? error.response.data : error);
         res.status(500).json({
-            error: error,
+            error: error.response.data ? error.response.data : error,
             message: 'Failed to create invoice'
         });
     }

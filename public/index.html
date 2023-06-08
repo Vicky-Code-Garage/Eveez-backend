@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Upload Invoice</title>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <h1>Upload Invoices</h1>
+    <div id="message"></div><br><br>
+    <input type="file" id="xlsxFile" accept=".xlsx">
+    <button onclick="convertToJson()">Convert to JSON</button><br><br>
+    <form id="invoiceForm">
+        <input type="submit" value="Create Invoice">
+    </form><br><br>
+    <pre id="jsonOutput"></pre>
+
+    <script>
+        let invoiceData = [];
+        document.getElementById('invoiceForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            try {
+                const response = await fetch('/api/zoho/createinvoice', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "items": invoiceData
+                    })
+                });
+                const data = await response.json();
+                console.log(data);
+                if (response.status === 200) {
+                    document.getElementById('message').innerText = 'Invoices created successfully';
+                } else {
+                    document.getElementById('message').innerText = 'Failed to create invoice : ' + data.error.message;
+                }
+            } catch (error) {
+                document.getElementById('message').innerText = 'Failed to create invoice';
+                console.error('Error creating invoice:', error);
+            }
+        });
+
+        function convertToJson() {
+            const fileInput = document.getElementById('xlsxFile');
+            const file = fileInput.files[0];
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+
+                const originalData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                var headerRow = originalData[0];
+
+                // Creating a new array to store the converted JSON objects
+                var convertedData = [];
+
+                // Loop through the original data rows starting from index 1 (skipping the header)
+                for (var i = 1; i < originalData.length; i++) {
+                    var row = originalData[i];
+                    var obj = {};
+
+                    // Loop through each cell in the row
+                    for (var j = 0; j < row.length; j++) {
+                        // Assign the value to the corresponding key from the header row
+                        if(headerRow[j] === "customer_id"){
+                            obj[headerRow[j]] = `${row[j]}`;
+                        }else{
+                            obj[headerRow[j]] = row[j];
+                        }
+                    }
+
+                    // Add the converted object to the new array
+                    convertedData.push(obj);
+                }
+                invoiceData = JSON.stringify(convertedData, null, 2);
+
+                const jsonOutput = document.getElementById('jsonOutput');
+                jsonOutput.innerText = JSON.stringify(convertedData, null, 2);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+    </script>
+</body>
+
+</html>
