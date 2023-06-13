@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Upload Invoice</title>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <h1>Upload Single Invoice</h1>
+    <div id="message"></div><br><br>
+    <form id="invoiceForm">
+        <label for="customerid">Customer id</label>
+        <input type="text" id="customerid" name="customerid"  required><br>
+        <label for="itemname">Item name</label>
+        <input type="text" id="itemname" name="itemname"  required><br>
+        <label for="quantity">Quantity</label>
+        <input type="text" id="quantity" name="quantity"  required><br>
+        <label for="rate">Rate</label>
+        <input type="text" id="rate" name="rate"  required><br>
+        <label for="description">Description</label>
+        <input type="text" id="description" name="description"  required><br>
+        <label for="to_email_id">To Email Id</label>
+        <input type="text" id="to_email_id" name="to_email_id"  required><br>
+        <label for="cc_email_id">CC Email Id</label>
+        <input type="text" id="cc_email_id" name="cc_email_id"  required><br>
+        <input type="submit" value="Create Invoice">
+    </form><br><br>
+    <pre id="jsonOutput"></pre>
+
+    <script>
+        document.getElementById('invoiceForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            let customer_id = document.getElementById('customerid').value;
+            let item_name = document.getElementById('itemname').value;
+            let quantity = document.getElementById('quantity').value;
+            let rate = document.getElementById('rate').value;
+            let description = document.getElementById('description').value;
+            let to_email_id = document.getElementById('to_email_id').value;
+            let cc_email_id = document.getElementById('cc_email_id').value;
+            try {
+                const response = await fetch('/api/zoho/createsingleinvoice', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "customer_id": customer_id,
+                        "item_name": item_name,
+                        "quantity": quantity,
+                        "rate": rate,
+                        "description": description,
+                        "to_email_id": to_email_id,
+                        "cc_email_ids": cc_email_id
+                    })
+                });
+                const data = await response.json();
+                console.log(data);
+                if (response.status === 200) {
+                    document.getElementById('message').innerText = 'Invoice created successfully';
+                } else {
+                    document.getElementById('message').innerText = 'Failed to create invoice : ' + data.error.message;
+                }
+            } catch (error) {
+                document.getElementById('message').innerText = 'Failed to create invoice';
+                console.error('Error creating invoice:', error);
+            }
+        });
+    </script>
+</body>
+
+</html>

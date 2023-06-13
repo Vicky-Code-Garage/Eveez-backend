@@ -1,5 +1,5 @@
 const express = require('express');
-const {getAccessToken, getInvoicesByRiderId, refreshAccessToken, createPaymentByInvoiceId, createOrder, verifyPayment, createInvoice, createCustomer, createDamageInvoice, createBulkInvoices, createInvoiceWithCustomers} = require('../controller/zohoApiCredentialController.js');
+const {getAccessToken, getInvoicesByRiderId, refreshAccessToken, createPaymentByInvoiceId, createOrder, verifyPayment, createInvoice, createCustomer, createDamageInvoice, createBulkInvoices, createInvoiceWithCustomers, createSingleInvoice} = require('../controller/zohoApiCredentialController.js');
 const {isAuthenticated} = require('../middlewares/auth.js');
 
 const router = express.Router();
@@ -9,6 +9,7 @@ router.route('/getinvoicesbyid').get(getInvoicesByRiderId);
 router.route('/createpayment').post(createPaymentByInvoiceId);
 router.route('/createrazorpayorder').post(createOrder);
 router.route('/verifyrazorpaypayment').post(verifyPayment);
+router.route('/createsingleinvoice').post(createSingleInvoice);
 router.route('/createinvoice').post(createInvoice);
 router.route('/createinvoicewithcustomer').post(createInvoiceWithCustomers);
 router.route('/createcustomer').post(createCustomer);

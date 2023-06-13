@@ -31,5 +31,9 @@ app.get('/upload/customers', (req, res) => {
     res.sendFile(__dirname+'/public/invoice_customer.html');
 });
 
+app.get('/upload/single', (req, res) => {
+    res.sendFile(__dirname+'/public/single_invoice.html');
+});
+
 const PORT = process.env.PORT || 5000
 app.listen(PORT, console.log(`Server running on Port ${PORT}`))
