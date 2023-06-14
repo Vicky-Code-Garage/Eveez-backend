@@ -363,6 +363,135 @@ async function createSingleInvoice(req, res) {
     }
 }
 
+async function createSingleInvoiceNew(req, res) {
+    logroute(req);
+    try {
+        // Create the invoice object
+        let credentials = await ZohoApiCredentials.findOne();
+        const {
+            customer_name,
+            customer_email,
+            customer_phone,
+            item_name,
+            item_desc,
+            rate,
+            quantity,
+            to_email_id,
+            cc_email_ids
+        } = req.body;
+
+        let customer_data = JSON.stringify({
+            contact_name: customer_name,
+            email: customer_email,
+            phone: customer_phone,
+        });
+
+        let config_customer = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: `https://www.zohoapis.in/books/v3/contacts?organization_id=${process.env.ORGANIZATION_ID}`,
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
+            },
+            data: customer_data
+        };
+
+        const response_customer = await axios.request(config_customer);
+        const customer = response_customer.data.contact;
+
+
+
+        let data = JSON.stringify({
+            customer_id: customer.contact_id,
+            line_items: [
+                {
+                    name: item_name,
+                    description: item_desc,
+                    rate: rate,
+                    quantity: quantity,
+                },
+            ],
+            payment_options: {
+                payment_gateways: [
+                    {
+                        configured: true,
+                    },
+                ],
+            },
+            allow_partial_payments: false,
+        });
+
+        let config = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: `https://www.zohoapis.in/books/v3/invoices`,
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
+            },
+            data: data
+        };
+
+        const response = await axios.request(config);
+        const invoice = response.data.invoice;
+
+        let config_sent = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: `https://www.zohoapis.in/books/v3/invoices/${invoice.invoice_id}/status/sent?organization_id=${process.env.ORGANIZATION_ID}`,
+            headers: {
+                'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
+            }
+        };
+        const response_sent = await axios.request(config_sent);
+        console.log(response_sent.data.message);
+
+        let config_email = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: `https://www.zohoapis.in/books/v3/invoices/${invoice.invoice_id}/email?organization_id=${process.env.ORGANIZATION_ID}`,
+            headers: {
+                'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
+            },
+        };
+        const response_email = await axios.request(config_email);
+        const { body,subject }= response_email.data;
+
+        let config_email_send = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: `https://www.zohoapis.in/books/v3/invoices/${invoice.invoice_id}/email?organization_id=${process.env.ORGANIZATION_ID}`,
+            headers: {
+                'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
+            },
+            data: {
+                    "send_from_org_email_id": false,
+                    "to_mail_ids": [
+                        to_email_id
+                    ],
+                    "cc_mail_ids": cc_email_ids.split(','),
+                    "subject": subject,
+                    "body": body
+            }
+        };
+        const response_email_send = await axios.request(config_email_send);
+        console.log(response_email_send.data.message);
+
+        res.status(200).json({
+            message: 'Invoices created successfully',
+            invoices: invoice
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            error: error,
+            message: 'Failed to create invoice'
+        });
+    }
+}
+
 async function createInvoice(req, res) {
     logroute(req)
     try {
@@ -499,7 +628,6 @@ async function createInvoiceWithCustomers(req, res) {
             if(!items[item].customer_name){
                 break;
             }
-            console.log(customer_name);
 
             let customer_data = JSON.stringify({
                 contact_name: customer_name,
@@ -520,7 +648,6 @@ async function createInvoiceWithCustomers(req, res) {
 
             const response_customer = await axios.request(config_customer);
             const customer = response_customer.data.contact;
-            console.log(customer);
     
             let data = JSON.stringify({
                 customer_id: customer.contact_id,
@@ -831,6 +958,7 @@ module.exports = {
     createOrder,
     verifyPayment,
     createSingleInvoice,
+    createSingleInvoiceNew,
     createInvoice,
     createCustomer,
     createInvoiceWithCustomers,

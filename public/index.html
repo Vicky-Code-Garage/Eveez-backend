@@ -8,15 +8,105 @@
 
 <body>
     <h1>Upload Invoices</h1>
+    <select id="mySelect">
+        <option value="bulk1">Bulk Invoice for Existing Customers</option>
+        <option value="bulk2">Bulk Invoice for New Customers</option>
+        <option value="single1">Single Invoice for Existing Customer</option>
+        <option value="single2">Single Invoice for New Customer</option>
+    </select><br><br>
     <div id="message"></div><br><br>
-    <input type="file" id="xlsxFile" accept=".xlsx">
-    <button onclick="convertToJson()">Convert to JSON</button><br><br>
-    <form id="invoiceForm">
-        <input type="submit" value="Create Invoice">
-    </form><br><br>
-    <pre id="jsonOutput"></pre>
-
+    <section id="bulk_section1">
+        <input type="file" id="xlsxFile" accept=".xlsx">
+        <button onclick="convertToJson()">Convert to JSON</button><br><br>
+        <form id="invoiceForm">
+            <input type="submit" value="Create Invoice">
+        </form><br><br>
+        <pre id="jsonOutput"></pre>
+    </section>
+    <section id="bulk_section2" style="display: none;">
+        <input type="file" id="xlsxFile2" accept=".xlsx">
+        <button onclick="convertToJson2()">Convert to JSON</button><br><br>
+        <form id="invoiceForm2">
+            <input type="submit" value="Create Invoice">
+        </form><br><br>
+        <pre id="jsonOutput2"></pre>
+    </section>
+    <section id="single_section1" style="display: none;">
+        <form id="invoiceForm3">
+            <label for="customerid">Customer id</label>
+            <input type="text" id="customerid" name="customerid"  required><br><br>
+            <label for="itemname">Item name</label>
+            <input type="text" id="itemname" name="itemname"  required><br><br>
+            <label for="quantity">Quantity</label>
+            <input type="text" id="quantity" name="quantity"  required><br><br>
+            <label for="rate">Rate</label>
+            <input type="text" id="rate" name="rate"  required><br><br>
+            <label for="description">Description</label>
+            <input type="text" id="description" name="description"  required><br><br>
+            <label for="to_email_id">To Email Id</label>
+            <input type="text" id="to_email_id" name="to_email_id"  required><br><br>
+            <label for="cc_email_id">CC Email Id</label>
+            <input type="text" id="cc_email_id" name="cc_email_id"  required><br><br>
+            <input type="submit" value="Create Invoice">
+        </form><br><br>
+    </section>
+    <section id="single_section2" style="display: none;">
+        <form id="invoiceForm4">
+            <label for="customername">Customer Name</label>
+            <input type="text" id="customername" name="customername"  required><br><br>
+            <label for="customerphone">Customer Phone</label>
+            <input type="text" id="customerphone" name="customerphone"  required><br><br>
+            <label for="customeremail">Customer Email</label>
+            <input type="text" id="customeremail" name="customeremail"  required><br><br>
+            <label for="itemname2">Item name</label>
+            <input type="text" id="itemname2" name="itemname2"  required><br><br>
+            <label for="quantity2">Quantity</label>
+            <input type="text" id="quantity2" name="quantity2"  required><br><br>
+            <label for="rate2">Rate</label>
+            <input type="text" id="rate2" name="rate2"  required><br><br>
+            <label for="description2">Description</label>
+            <input type="text" id="description2" name="description2"  required><br><br>
+            <label for="to_email_id2">To Email Id</label>
+            <input type="text" id="to_email_id2" name="to_email_id2"  required><br><br>
+            <label for="cc_email_id2">CC Email Id</label>
+            <input type="text" id="cc_email_id2" name="cc_email_id2"  required><br><br>
+            <input type="submit" value="Create Invoice">
+        </form><br><br>
+    </section>
     <script>
+        var selectElement = document.getElementById("mySelect");
+        let option = 'bulk1'
+
+        // Add event listener to listen for changes
+        selectElement.addEventListener("change", function () {
+            // Get the selected option
+            var selectedOption = selectElement.options[selectElement.selectedIndex].value;
+            // Do something with the selected option
+            console.log("Selected option: " + selectedOption);
+            option = selectedOption;
+            if(selectedOption === 'bulk1'){
+                document.getElementById('bulk_section1').style.display = 'block';
+                document.getElementById('bulk_section2').style.display = 'none';
+                document.getElementById('single_section1').style.display = 'none';
+                document.getElementById('single_section2').style.display = 'none';
+            } else if(selectedOption === 'bulk2'){
+                document.getElementById('bulk_section1').style.display = 'none';
+                document.getElementById('bulk_section2').style.display = 'block';
+                document.getElementById('single_section1').style.display = 'none';
+                document.getElementById('single_section2').style.display = 'none';
+            } else if(selectedOption === 'single1'){
+                document.getElementById('bulk_section1').style.display = 'none';
+                document.getElementById('bulk_section2').style.display = 'none';
+                document.getElementById('single_section1').style.display = 'block';
+                document.getElementById('single_section2').style.display = 'none';
+            } else if(selectedOption === 'single2'){
+                document.getElementById('bulk_section1').style.display = 'none';
+                document.getElementById('bulk_section2').style.display = 'none';
+                document.getElementById('single_section1').style.display = 'none';
+                document.getElementById('single_section2').style.display = 'block';
+            }
+        });
+        //
         let invoiceData = [];
         document.getElementById('invoiceForm').addEventListener('submit', async function (event) {
             event.preventDefault();
@@ -34,6 +124,111 @@
                 console.log(data);
                 if (response.status === 200) {
                     document.getElementById('message').innerText = 'Invoices created successfully';
+                } else {
+                    document.getElementById('message').innerText = 'Failed to create invoice : ' + data.error.message;
+                }
+            } catch (error) {
+                document.getElementById('message').innerText = 'Failed to create invoice';
+                console.error('Error creating invoice:', error);
+            }
+        });
+
+        document.getElementById('invoiceForm2').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            try {
+                const response = await fetch('/api/zoho/createinvoicewithcustomer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "items": invoiceData
+                    })
+                });
+                const data = await response.json();
+                console.log(data);
+                if (response.status === 200) {
+                    document.getElementById('message').innerText = 'Invoices created successfully';
+                } else {
+                    document.getElementById('message').innerText = 'Failed to create invoice : ' + data.error.message;
+                }
+            } catch (error) {
+                document.getElementById('message').innerText = 'Failed to create invoice';
+                console.error('Error creating invoice:', error);
+            }
+        });
+
+        document.getElementById('invoiceForm3').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            let customer_id = document.getElementById('customerid').value;
+            let item_name = document.getElementById('itemname').value;
+            let quantity = document.getElementById('quantity').value;
+            let rate = document.getElementById('rate').value;
+            let description = document.getElementById('description').value;
+            let to_email_id = document.getElementById('to_email_id').value;
+            let cc_email_id = document.getElementById('cc_email_id').value;
+            try {
+                const response = await fetch('/api/zoho/createsingleinvoice', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "customer_id": customer_id,
+                        "item_name": item_name,
+                        "quantity": quantity,
+                        "rate": rate,
+                        "description": description,
+                        "to_email_id": to_email_id,
+                        "cc_email_ids": cc_email_id
+                    })
+                });
+                const data = await response.json();
+                console.log(data);
+                if (response.status === 200) {
+                    document.getElementById('message').innerText = 'Invoice created successfully';
+                } else {
+                    document.getElementById('message').innerText = 'Failed to create invoice : ' + data.error.message;
+                }
+            } catch (error) {
+                document.getElementById('message').innerText = 'Failed to create invoice';
+                console.error('Error creating invoice:', error);
+            }
+        });
+
+        document.getElementById('invoiceForm4').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            let customer_name = document.getElementById('customername').value;
+            let customer_email = document.getElementById('customeremail').value;
+            let customer_phone = document.getElementById('customerphone').value;
+            let item_name = document.getElementById('itemname2').value;
+            let quantity = document.getElementById('quantity2').value;
+            let rate = document.getElementById('rate2').value;
+            let description = document.getElementById('description2').value;
+            let to_email_id = document.getElementById('to_email_id2').value;
+            let cc_email_id = document.getElementById('cc_email_id2').value;
+            try {
+                const response = await fetch('/api/zoho/createsingleinvoicenew', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "customer_name": customer_name,
+                        "customer_email": customer_email,
+                        "customer_phone": customer_phone,
+                        "item_name": item_name,
+                        "quantity": quantity,
+                        "rate": rate,
+                        "description": description,
+                        "to_email_id": to_email_id,
+                        "cc_email_ids": cc_email_id
+                    })
+                });
+                const data = await response.json();
+                console.log(data);
+                if (response.status === 200) {
+                    document.getElementById('message').innerText = 'Invoice created successfully';
                 } else {
                     document.getElementById('message').innerText = 'Failed to create invoice : ' + data.error.message;
                 }
@@ -71,9 +266,9 @@
                     // Loop through each cell in the row
                     for (var j = 0; j < row.length; j++) {
                         // Assign the value to the corresponding key from the header row
-                        if(headerRow[j] === "customer_id"){
+                        if (headerRow[j] === "customer_id") {
                             obj[headerRow[j]] = `${row[j]}`;
-                        }else{
+                        } else {
                             obj[headerRow[j]] = row[j];
                         }
                     }
@@ -84,6 +279,53 @@
                 invoiceData = JSON.stringify(convertedData, null, 2);
 
                 const jsonOutput = document.getElementById('jsonOutput');
+                jsonOutput.innerText = JSON.stringify(convertedData, null, 2);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function convertToJson2() {
+            const fileInput = document.getElementById('xlsxFile2');
+            const file = fileInput.files[0];
+            console.log(file);
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+
+                const originalData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                var headerRow = originalData[0];
+
+                // Creating a new array to store the converted JSON objects
+                var convertedData = [];
+
+                // Loop through the original data rows starting from index 1 (skipping the header)
+                for (var i = 1; i < originalData.length; i++) {
+                    var row = originalData[i];
+                    var obj = {};
+
+                    // Loop through each cell in the row
+                    for (var j = 0; j < row.length; j++) {
+                        // Assign the value to the corresponding key from the header row
+                        if (headerRow[j] === "customer_id") {
+                            obj[headerRow[j]] = `${row[j]}`;
+                        } else {
+                            obj[headerRow[j]] = row[j];
+                        }
+                    }
+
+                    // Add the converted object to the new array
+                    convertedData.push(obj);
+                }
+                invoiceData = JSON.stringify(convertedData, null, 2);
+
+                const jsonOutput = document.getElementById('jsonOutput2');
                 jsonOutput.innerText = JSON.stringify(convertedData, null, 2);
             };
             reader.readAsArrayBuffer(file);
