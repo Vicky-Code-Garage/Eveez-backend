@@ -265,16 +265,21 @@ async function createSingleInvoice(req, res) {
         let credentials = await ZohoApiCredentials.findOne();
         const {
             customer_id,
+            invoice_no,
+            place_of_supply,
             item_name,
             item_desc,
             rate,
             quantity,
             to_email_id,
-            cc_email_ids
+            cc_email_ids,
+            month,
+            year,
         } = req.body;
 
         let data = JSON.stringify({
             customer_id: customer_id,
+            invoice_number: invoice_no,
             line_items: [
                 {
                     name: item_name,
@@ -291,6 +296,21 @@ async function createSingleInvoice(req, res) {
                 ],
             },
             allow_partial_payments: false,
+            place_of_supply: place_of_supply,
+            custom_fields: [
+                {
+                    index: 1,
+                    show_on_pdf: true,
+                    label: 'Month',
+                    value: month,
+                },
+                {
+                    index: 2,
+                    show_on_pdf: true,
+                    label: 'Year',
+                    value: year,
+                },
+            ],
         });
 
         let config = {
@@ -327,7 +347,7 @@ async function createSingleInvoice(req, res) {
             },
         };
         const response_email = await axios.request(config_email);
-        const { body,subject }= response_email.data;
+        const { body, subject } = response_email.data;
 
         let config_email_send = {
             method: 'post',
@@ -337,13 +357,13 @@ async function createSingleInvoice(req, res) {
                 'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
             },
             data: {
-                    "send_from_org_email_id": false,
-                    "to_mail_ids": [
-                        to_email_id
-                    ],
-                    "cc_mail_ids": cc_email_ids.split(','),
-                    "subject": subject,
-                    "body": body
+                "send_from_org_email_id": false,
+                "to_mail_ids": [
+                    to_email_id
+                ],
+                "cc_mail_ids": cc_email_ids.split(','),
+                "subject": subject,
+                "body": body
             }
         };
         const response_email_send = await axios.request(config_email_send);
@@ -372,18 +392,52 @@ async function createSingleInvoiceNew(req, res) {
             customer_name,
             customer_email,
             customer_phone,
+            bil_add,
+            bil_city,
+            bil_state,
+            bil_zip,
+            bil_country,
+            ship_add,
+            ship_city,
+            ship_state,
+            ship_zip,
+            ship_country,
+            gst_treatment,
+            gst_no,
+            suscriber_id,
+            invoice_no,
+            place_of_supply,
             item_name,
             item_desc,
             rate,
             quantity,
             to_email_id,
-            cc_email_ids
+            cc_email_ids,
+            month,
+            year
         } = req.body;
 
         let customer_data = JSON.stringify({
             contact_name: customer_name,
             email: customer_email,
             phone: customer_phone,
+            billing_address: {
+                address: bil_add,
+                city: bil_city,
+                state: bil_state,
+                zip: bil_zip,
+                country: bil_country,
+            },
+            shipping_address: {
+                address: ship_add,
+                city: ship_city,
+                state: ship_state,
+                zip: ship_zip,
+                country: ship_country,
+            },
+            gst_treatment: gst_treatment,
+            gst_no: gst_no,
+            suscriber_id: suscriber_id
         });
 
         let config_customer = {
@@ -399,11 +453,13 @@ async function createSingleInvoiceNew(req, res) {
 
         const response_customer = await axios.request(config_customer);
         const customer = response_customer.data.contact;
+        console.log(customer);
 
 
 
         let data = JSON.stringify({
             customer_id: customer.contact_id,
+            invoice_number: invoice_no,
             line_items: [
                 {
                     name: item_name,
@@ -420,6 +476,21 @@ async function createSingleInvoiceNew(req, res) {
                 ],
             },
             allow_partial_payments: false,
+            place_of_supply: place_of_supply,
+            custom_fields: [
+                {
+                    index: 1,
+                    show_on_pdf: true,
+                    label: 'Month',
+                    value: month,
+                },
+                {
+                    index: 2,
+                    show_on_pdf: true,
+                    label: 'Year',
+                    value: year,
+                },
+            ],
         });
 
         let config = {
@@ -456,7 +527,7 @@ async function createSingleInvoiceNew(req, res) {
             },
         };
         const response_email = await axios.request(config_email);
-        const { body,subject }= response_email.data;
+        const { body, subject } = response_email.data;
 
         let config_email_send = {
             method: 'post',
@@ -466,13 +537,13 @@ async function createSingleInvoiceNew(req, res) {
                 'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
             },
             data: {
-                    "send_from_org_email_id": false,
-                    "to_mail_ids": [
-                        to_email_id
-                    ],
-                    "cc_mail_ids": cc_email_ids.split(','),
-                    "subject": subject,
-                    "body": body
+                "send_from_org_email_id": false,
+                "to_mail_ids": [
+                    to_email_id
+                ],
+                "cc_mail_ids": cc_email_ids.split(','),
+                "subject": subject,
+                "body": body
             }
         };
         const response_email_send = await axios.request(config_email_send);
@@ -499,22 +570,27 @@ async function createInvoice(req, res) {
         let credentials = await ZohoApiCredentials.findOne();
         const items = JSON.parse(req.body.items);
         let createdInvoices = [];
-        for(const item in items){
-            const { 
-                item_name, 
+        for (const item in items) {
+            const {
+                invoice_no,
+                item_name,
                 item_desc,
                 rate,
                 quantity,
                 customer_id,
                 to_email_id,
-                cc_email_ids
+                cc_email_ids,
+                place_of_supply,
+                month,
+                year,
             } = items[item];
-            if(!items[item].customer_id){
+            if (!items[item].customer_id) {
                 break;
             }
-    
+
             let data = JSON.stringify({
                 customer_id: customer_id,
+                invoice_number: invoice_no,
                 line_items: [
                     {
                         name: item_name,
@@ -533,8 +609,23 @@ async function createInvoice(req, res) {
                     ]
                 },
                 allow_partial_payments: false,
+                place_of_supply: place_of_supply,
+                custom_fields: [
+                    {
+                        index: 1,
+                        show_on_pdf: true,
+                        label: 'Month',
+                        value: month,
+                    },
+                    {
+                        index: 2,
+                        show_on_pdf: true,
+                        label: 'Year',
+                        value: year,
+                    },
+                ],
             });
-    
+
             let config = {
                 method: 'post',
                 maxBodyLength: Infinity,
@@ -545,11 +636,11 @@ async function createInvoice(req, res) {
                 },
                 data: data
             };
-    
+
             const response = await axios.request(config);
             const invoice = response.data.invoice;
             createdInvoices.push(invoice);
-    
+
             let config_sent = {
                 method: 'post',
                 maxBodyLength: Infinity,
@@ -560,7 +651,7 @@ async function createInvoice(req, res) {
             };
             const response_sent = await axios.request(config_sent);
             console.log(response_sent.data.message);
-    
+
             let config_email = {
                 method: 'get',
                 maxBodyLength: Infinity,
@@ -570,8 +661,8 @@ async function createInvoice(req, res) {
                 },
             };
             const response_email = await axios.request(config_email);
-            const { body,subject }= response_email.data;
-    
+            const { body, subject } = response_email.data;
+
             let config_email_send = {
                 method: 'post',
                 maxBodyLength: Infinity,
@@ -580,13 +671,13 @@ async function createInvoice(req, res) {
                     'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
                 },
                 data: {
-                        "send_from_org_email_id": false,
-                        "to_mail_ids": [
-                            to_email_id
-                        ],
-                        "cc_mail_ids": cc_email_ids.split(','),
-                        "subject": subject,
-                        "body": body
+                    "send_from_org_email_id": false,
+                    "to_mail_ids": [
+                        to_email_id
+                    ],
+                    "cc_mail_ids": cc_email_ids.split(','),
+                    "subject": subject,
+                    "body": body
                 }
             };
             const response_email_send = await axios.request(config_email_send);
@@ -596,7 +687,7 @@ async function createInvoice(req, res) {
             message: 'Invoice created successfully and sent to customer',
             invoice: createdInvoices
         });
-        
+
     } catch (error) {
         console.error('Error creating invoice:', error.response.data ? error.response.data : error);
         res.status(500).json({
@@ -613,26 +704,60 @@ async function createInvoiceWithCustomers(req, res) {
         let credentials = await ZohoApiCredentials.findOne();
         const items = JSON.parse(req.body.items);
         let createdInvoices = [];
-        for(const item in items){
-            const { 
+        for (const item in items) {
+            const {
                 customer_name,
                 customer_email,
                 customer_phone,
-                item_name, 
+                bil_add,
+                bil_city,
+                bil_state,
+                bil_zip,
+                bil_country,
+                ship_add,
+                ship_city,
+                ship_state,
+                ship_zip,
+                ship_country,
+                gst_treatment,
+                gst_no,
+                suscriber_id,
+                invoice_no,
+                place_of_supply,
+                item_name,
                 item_desc,
                 rate,
                 quantity,
                 to_email_id,
-                cc_email_ids
+                cc_email_ids,
+                month,
+                year,
+                is_security_slip,
             } = items[item];
-            if(!items[item].customer_name){
+            if (!items[item].customer_name) {
                 break;
             }
-
             let customer_data = JSON.stringify({
                 contact_name: customer_name,
                 email: customer_email,
                 phone: customer_phone,
+                billing_address: {
+                    address: bil_add,
+                    city: bil_city,
+                    state: bil_state,
+                    zip: '560001',
+                    country: bil_country,
+                },
+                shipping_address: {
+                    address: ship_add,
+                    city: ship_city,
+                    state: ship_state,
+                    zip: '560001',
+                    country: ship_country,
+                },
+                gst_treatment: gst_treatment,
+                gst_no: gst_no,
+                suscriber_id: suscriber_id
             });
 
             let config_customer = {
@@ -648,9 +773,10 @@ async function createInvoiceWithCustomers(req, res) {
 
             const response_customer = await axios.request(config_customer);
             const customer = response_customer.data.contact;
-    
+
             let data = JSON.stringify({
                 customer_id: customer.contact_id,
+                invoice_number: invoice_no,
                 line_items: [
                     {
                         name: item_name,
@@ -663,14 +789,31 @@ async function createInvoiceWithCustomers(req, res) {
                     payment_gateways: [
                         {
                             configured: true,
-                            additional_field1: "standard",
-                            gateway_name: "razorpay"
-                        }
-                    ]
+                        },
+                    ],
                 },
+                tax_name: 'GST',
+                tax_type: 'tax',
+                tax_percentage: 0,
                 allow_partial_payments: false,
+                place_of_supply: place_of_supply,
+                template_id: is_security_slip ? '1300331000000207453' : null,
+                custom_fields: [
+                    {
+                        index: 1,
+                        show_on_pdf: true,
+                        label: 'Month',
+                        value: month,
+                    },
+                    {
+                        index: 2,
+                        show_on_pdf: true,
+                        label: 'Year',
+                        value: year,
+                    },
+                ]
             });
-    
+
             let config = {
                 method: 'post',
                 maxBodyLength: Infinity,
@@ -681,11 +824,11 @@ async function createInvoiceWithCustomers(req, res) {
                 },
                 data: data
             };
-    
+
             const response = await axios.request(config);
             const invoice = response.data.invoice;
             createdInvoices.push(invoice);
-    
+
             let config_sent = {
                 method: 'post',
                 maxBodyLength: Infinity,
@@ -696,7 +839,7 @@ async function createInvoiceWithCustomers(req, res) {
             };
             const response_sent = await axios.request(config_sent);
             console.log(response_sent.data.message);
-    
+
             let config_email = {
                 method: 'get',
                 maxBodyLength: Infinity,
@@ -706,8 +849,8 @@ async function createInvoiceWithCustomers(req, res) {
                 },
             };
             const response_email = await axios.request(config_email);
-            const { body,subject }= response_email.data;
-    
+            const { body, subject } = response_email.data;
+
             let config_email_send = {
                 method: 'post',
                 maxBodyLength: Infinity,
@@ -716,13 +859,13 @@ async function createInvoiceWithCustomers(req, res) {
                     'Authorization': `Zoho-oauthtoken ${credentials.accessToken}`,
                 },
                 data: {
-                        "send_from_org_email_id": false,
-                        "to_mail_ids": [
-                            to_email_id
-                        ],
-                        "cc_mail_ids": cc_email_ids.split(','),
-                        "subject": subject,
-                        "body": body
+                    "send_from_org_email_id": false,
+                    "to_mail_ids": [
+                        to_email_id
+                    ],
+                    "cc_mail_ids": cc_email_ids.split(','),
+                    "subject": subject,
+                    "body": body
                 }
             };
             const response_email_send = await axios.request(config_email_send);
@@ -732,7 +875,7 @@ async function createInvoiceWithCustomers(req, res) {
             message: 'Invoice created successfully and sent to customer',
             invoice: createdInvoices
         });
-        
+
     } catch (error) {
         console.error('Error creating invoice:', error);
         res.status(500).json({
@@ -752,8 +895,8 @@ async function createBulkInvoices(req, res) {
         let invoices = [];
 
         for (const item of items) {
-            const { 
-                item_name, 
+            const {
+                item_name,
                 item_desc,
                 rate,
                 quantity,
@@ -793,7 +936,7 @@ async function createBulkInvoices(req, res) {
                 },
                 data: data
             };
-            
+
             const response = await axios.request(config);
             const createdInvoice = response.data;
             const invoice = response.data.invoice;
@@ -811,7 +954,7 @@ async function createBulkInvoices(req, res) {
             invoices.push(createdInvoice);
         }
 
-        
+
 
         res.status(200).json({
             message: 'Invoices created successfully',
@@ -888,7 +1031,7 @@ async function createDamageInvoice(req, res) {
             const { name, description } = item;
             const foundItem = itemList.items.find(
                 (queryItem) =>
-                  queryItem.name === name && queryItem.description === description
+                    queryItem.name === name && queryItem.description === description
             );
             if (foundItem) {
                 results.push(foundItem);

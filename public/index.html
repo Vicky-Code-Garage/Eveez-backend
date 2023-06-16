@@ -35,6 +35,8 @@
         <form id="invoiceForm3">
             <label for="customerid">Customer id</label>
             <input type="text" id="customerid" name="customerid"  required><br><br>
+            <label for="invoiceno2">Invoice No.</label>
+            <input type="text" id="invoiceno2" name="invoiceno2"  required><br><br>
             <label for="itemname">Item name</label>
             <input type="text" id="itemname" name="itemname"  required><br><br>
             <label for="quantity">Quantity</label>
@@ -47,17 +49,55 @@
             <input type="text" id="to_email_id" name="to_email_id"  required><br><br>
             <label for="cc_email_id">CC Email Id</label>
             <input type="text" id="cc_email_id" name="cc_email_id"  required><br><br>
+            <label for="place_of_supply2">Place of Supply</label>
+            <input type="text" id="place_of_supply2" name="place_of_supply2"  required><br><br>
+            <label for="month2">month</label>
+            <input type="text" id="month2" name="month2"  required><br><br>
+            <label for="year2">year</label>
+            <input type="text" id="year2" name="year2"  required><br><br>
             <input type="submit" value="Create Invoice">
         </form><br><br>
     </section>
     <section id="single_section2" style="display: none;">
         <form id="invoiceForm4">
+            <h2>Customer Details</h2><br>
             <label for="customername">Customer Name</label>
             <input type="text" id="customername" name="customername"  required><br><br>
             <label for="customerphone">Customer Phone</label>
             <input type="text" id="customerphone" name="customerphone"  required><br><br>
             <label for="customeremail">Customer Email</label>
             <input type="text" id="customeremail" name="customeremail"  required><br><br>
+            <label for="customersubid">Subscriber Id</label>
+            <input type="text" id="customersubid" name="customersubid"  required><br><br>
+            <h4>Billing Address</h4><br>
+            <label for="billingaddressline1">Address Line 1 :</label>
+            <input type="text" id="billingaddressline1" name="billingaddressline1"  required><br><br>
+            <label for="billingcity">City :</label>
+            <input type="text" id="billingcity" name="billingcity"  required><br><br>
+            <label for="billingstate">State :</label>
+            <input type="text" id="billingstate" name="billingstate"  required><br><br>
+            <label for="billingzip">Zip :</label>
+            <input type="text" id="billingzip" name="billingzip"  required><br><br>
+            <label for="billingcountry">Country :</label>
+            <input type="text" id="billingcountry" name="billingcountry"  required><br><br>
+            <h4>Shipping Address</h4><br>
+            <label for="shippingaddressline1">Address Line 1 :</label>
+            <input type="text" id="shippingaddressline1" name="shippingaddressline1"  required><br><br>
+            <label for="shippingcity">City :</label>
+            <input type="text" id="shippingcity" name="shippingcity"  required><br><br>
+            <label for="shippingstate">State :</label>
+            <input type="text" id="shippingstate" name="shippingstate"  required><br><br>
+            <label for="shippingzip">Zip :</label>
+            <input type="text" id="shippingzip" name="shippingzip"  required><br><br>
+            <label for="shippingcountry">Country :</label>
+            <input type="text" id="shippingcountry" name="shippingcountry"  required><br><br>
+            <label for="gst_treatment">GST Treatment</label>
+            <input type="text" id="gst_treatment" name="gst_treatment"  required><br><br>
+            <label for="gst_no">GST No</label>
+            <input type="text" id="gst_no" name="gst_no"  required><br><br>
+            <h2>Invoice Details</h2><br>
+            <label for="invoice_no">Invoice No.</label>
+            <input type="text" id="invoice_no" name="invoice_no"  required><br><br>
             <label for="itemname2">Item name</label>
             <input type="text" id="itemname2" name="itemname2"  required><br><br>
             <label for="quantity2">Quantity</label>
@@ -70,12 +110,19 @@
             <input type="text" id="to_email_id2" name="to_email_id2"  required><br><br>
             <label for="cc_email_id2">CC Email Id</label>
             <input type="text" id="cc_email_id2" name="cc_email_id2"  required><br><br>
+            <label for="place_of_supply">Place of Supply</label>
+            <input type="text" id="place_of_supply" name="place_of_supply"  required><br><br>
+            <label for="month">Month</label>
+            <input type="text" id="month" name="month"  required><br><br>
+            <label for="year">Year</label>
+            <input type="text" id="year" name="year"  required><br><br>
             <input type="submit" value="Create Invoice">
         </form><br><br>
     </section>
     <script>
         var selectElement = document.getElementById("mySelect");
         let option = 'bulk1'
+        let invoiceData2 = [];
 
         // Add event listener to listen for changes
         selectElement.addEventListener("change", function () {
@@ -136,13 +183,14 @@
         document.getElementById('invoiceForm2').addEventListener('submit', async function (event) {
             event.preventDefault();
             try {
+                console.log(invoiceData2);
                 const response = await fetch('/api/zoho/createinvoicewithcustomer', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        "items": invoiceData
+                        "items": invoiceData2
                     })
                 });
                 const data = await response.json();
@@ -161,12 +209,16 @@
         document.getElementById('invoiceForm3').addEventListener('submit', async function (event) {
             event.preventDefault();
             let customer_id = document.getElementById('customerid').value;
+            let invoice_no = document.getElementById('invoiceno2').value;
             let item_name = document.getElementById('itemname').value;
             let quantity = document.getElementById('quantity').value;
             let rate = document.getElementById('rate').value;
             let description = document.getElementById('description').value;
             let to_email_id = document.getElementById('to_email_id').value;
             let cc_email_id = document.getElementById('cc_email_id').value;
+            let place_of_supply = document.getElementById('place_of_supply2').value;
+            let month = document.getElementById('month2').value;
+            let year = document.getElementById('year2').value;
             try {
                 const response = await fetch('/api/zoho/createsingleinvoice', {
                     method: 'POST',
@@ -175,12 +227,16 @@
                     },
                     body: JSON.stringify({
                         "customer_id": customer_id,
+                        "invoice_no": invoice_no,
                         "item_name": item_name,
                         "quantity": quantity,
                         "rate": rate,
                         "description": description,
                         "to_email_id": to_email_id,
-                        "cc_email_ids": cc_email_id
+                        "cc_email_ids": cc_email_id,
+                        "place_of_supply": place_of_supply,
+                        "month": month,
+                        "year": year
                     })
                 });
                 const data = await response.json();
@@ -201,12 +257,30 @@
             let customer_name = document.getElementById('customername').value;
             let customer_email = document.getElementById('customeremail').value;
             let customer_phone = document.getElementById('customerphone').value;
+            let billingaddressline1 = document.getElementById('billingaddressline1').value;
+            let billingcity = document.getElementById('billingcity').value;
+            let billingstate = document.getElementById('billingstate').value;
+            let billingzip = document.getElementById('billingzip').value;
+            let billingcountry = document.getElementById('billingcountry').value;
+            let shippingaddressline1 = document.getElementById('shippingaddressline1').value;
+            let shippingcity = document.getElementById('shippingcity').value;
+            let shippingstate = document.getElementById('shippingstate').value;
+            let shippingzip = document.getElementById('shippingzip').value;
+            let shippingcountry = document.getElementById('shippingcountry').value;
+            let gst_treatment = document.getElementById('gst_treatment').value;
+            let place_of_supply = document.getElementById('place_of_supply').value;
+            let gst_no = document.getElementById('gst_no').value;
+            let invoice_no = document.getElementById('invoice_no').value;
             let item_name = document.getElementById('itemname2').value;
             let quantity = document.getElementById('quantity2').value;
             let rate = document.getElementById('rate2').value;
             let description = document.getElementById('description2').value;
             let to_email_id = document.getElementById('to_email_id2').value;
             let cc_email_id = document.getElementById('cc_email_id2').value;
+            let customersubid = document.getElementById('customersubid').value;
+            let month = document.getElementById('month').value;
+            let year = document.getElementById('year').value;
+
             try {
                 const response = await fetch('/api/zoho/createsingleinvoicenew', {
                     method: 'POST',
@@ -217,12 +291,29 @@
                         "customer_name": customer_name,
                         "customer_email": customer_email,
                         "customer_phone": customer_phone,
+                        "bil_add": billingaddressline1,
+                        "bil_city": billingcity,
+                        "bil_state" : billingstate,
+                        "bil_zip": billingzip,
+                        "bil_country": billingcountry,
+                        "ship_add": shippingaddressline1,
+                        "ship_city" : shippingcity,
+                        "ship_state": shippingstate,
+                        "ship_zip": shippingzip,
+                        "ship_country": shippingcountry,
+                        "gst_treatment": gst_treatment,
+                        "gst_no": gst_no,
+                        "suscriber_id" : "123",
+                        "invoice_no": invoice_no,
                         "item_name": item_name,
                         "quantity": quantity,
                         "rate": rate,
                         "description": description,
                         "to_email_id": to_email_id,
-                        "cc_email_ids": cc_email_id
+                        "cc_email_ids": cc_email_id,
+                        "place_of_supply": place_of_supply,
+                        "month": month,
+                        "year": year
                     })
                 });
                 const data = await response.json();
@@ -283,6 +374,7 @@
             };
             reader.readAsArrayBuffer(file);
         }
+        
 
         function convertToJson2() {
             const fileInput = document.getElementById('xlsxFile2');
@@ -323,7 +415,7 @@
                     // Add the converted object to the new array
                     convertedData.push(obj);
                 }
-                invoiceData = JSON.stringify(convertedData, null, 2);
+                invoiceData2 = JSON.stringify(convertedData, null, 2);
 
                 const jsonOutput = document.getElementById('jsonOutput2');
                 jsonOutput.innerText = JSON.stringify(convertedData, null, 2);
