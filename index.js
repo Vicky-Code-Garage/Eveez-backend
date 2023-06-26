@@ -4,6 +4,7 @@ const connectDB = require('./config/db.js');
 const mongoose = require('mongoose');
 const zohoApiRoutes = require('./routes/zohoApiRoutes.js');
 const suscriberRoutes  = require('./routes/suscriberRoutes.js');
+const gigWorkerRoutes = require('./controller/gigWorkerController.js');
 
 
 dotenv.config()
@@ -23,8 +24,12 @@ app.get('/', (req,res) => {
 //routes
 app.use('/api/zoho', zohoApiRoutes);
 app.use('/api/subscriber', suscriberRoutes);
+app.use('/api/gig', gigWorkerRoutes);
 app.get('/upload', (req, res) => {
     res.sendFile(__dirname+'/public/index.html');
+});
+app.get('/gigs', (req, res) => {
+    res.sendFile(__dirname+'/public/gigs.html');
 });
 
 const PORT = process.env.PORT || 5000

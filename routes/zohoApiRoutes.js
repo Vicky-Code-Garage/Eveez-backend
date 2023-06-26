@@ -5,7 +5,7 @@ const {isAuthenticated} = require('../middlewares/auth.js');
 const router = express.Router();
 router.route('/refreshaccesstoken').post(refreshAccessToken);
 router.route('/getaccesstoken').get(getAccessToken, isAuthenticated);
-router.route('/getinvoicesbyid').get(getInvoicesByRiderId);
+router.route('/getinvoicesbyid').post(getInvoicesByRiderId);
 router.route('/createpayment').post(createPaymentByInvoiceId);
 router.route('/createrazorpayorder').post(createOrder);
 router.route('/verifyrazorpaypayment').post(verifyPayment);

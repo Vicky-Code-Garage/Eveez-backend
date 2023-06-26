@@ -115,17 +115,16 @@ async function getInvoicesByRiderId(req, res) {
     */
     logroute(req);
     try {
-        let id = req.user.id;
-        let status = req.status;
-        let rider = await Rider.findById(id);
+        let user = req.body.user;
+        let status = req.body.status;
         let credentials = await ZohoApiCredentials.findOne();
         const headers = {
             Authorization: `Zoho-oauthtoken ${credentials.accessToken}`,
             'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
         };
         const params = {
-            organization_id: '60021321831',
-            customer_id: `${rider.zoho_id}`,
+            organization_id: `${process.env.ORGANIZATION_ID}`,
+            customer_id: `${user.id}`,
             status: `${status}`
         }
         const response = await axios.get(
@@ -134,6 +133,7 @@ async function getInvoicesByRiderId(req, res) {
         );
         res.status(200).json(response.data);
     } catch (error) {
+        console.log(`Error: ${error}`);
         res.status(500).json({
             error: error,
             message: 'Failed to get invoices for the rider'

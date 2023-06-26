@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Gig Workers CRUD</title>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <h1>Gig Workers</h1>
+
+    <label for="crud-operation">Select CRUD Operation:</label>
+    <select id="crud-operation">
+        <option value="create">Create</option>
+        <option value="get-all">Get All</option>
+        <option value="bulk-activate">Bulk Activate</option>
+    </select>
+
+    <div id="form-container"></div>
+    <div id="gig-workers"></div>
+    <section id="bulk_section2" style="display: none;">
+        <input type="file" id="xlsxFile" accept=".xlsx">
+        <button onclick="convertToJson2()">Convert to JSON</button><br><br>
+        <form id="invoiceForm2">
+            <input type="submit" value="Bulk Activate">
+        </form><br><br>
+        <pre id="jsonOutput2"></pre>
+    </section>
+
+    <script>
+        let invoiceData2 = [];
+        document.getElementById('crud-operation').addEventListener('change', function () {
+            const bulk_section2 = document.getElementById('bulk_section2');
+            bulk_section2.style.display = 'none';
+            const selectedOperation = this.value;
+
+            const formContainer = document.getElementById('form-container');
+            formContainer.innerHTML = '';
+
+            const gigWorkersContainer = document.getElementById('gig-workers');
+            gigWorkersContainer.innerHTML = '';
+
+            if (selectedOperation === 'create') {
+                const createForm = document.createElement('form');
+                createForm.id = 'create-form';
+
+                const worker_id = document.createElement('label');
+                worker_id.for = 'worker_id';
+                worker_id.textContent = 'Worker ID:';
+                createForm.appendChild(worker_id);
+
+                const worker_idInput = document.createElement('input');
+                worker_idInput.type = 'text';
+                worker_idInput.id = 'worker_id';
+                worker_idInput.required = true;
+                createForm.appendChild(worker_idInput);
+
+                const nameLabel = document.createElement('label');
+                nameLabel.for = 'name';
+                nameLabel.textContent = 'Name:';
+                createForm.appendChild(nameLabel);
+
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.id = 'name';
+                nameInput.required = true;
+                createForm.appendChild(nameInput);
+
+                const emailLabel = document.createElement('label');
+                emailLabel.for = 'email';
+                emailLabel.textContent = 'Email:';
+                createForm.appendChild(emailLabel);
+
+                const emailInput = document.createElement('input');
+                emailInput.type = 'email';
+                emailInput.id = 'email';
+                emailInput.required = true;
+                createForm.appendChild(emailInput);
+
+                const phoneNumberLabel = document.createElement('label');
+                phoneNumberLabel.for = 'phoneNumber';
+                phoneNumberLabel.textContent = 'Phone Number:';
+                createForm.appendChild(phoneNumberLabel);
+
+                const phoneNumberInput = document.createElement('input');
+                phoneNumberInput.type = 'tel';
+                phoneNumberInput.id = 'phoneNumber';
+                phoneNumberInput.required = true;
+                createForm.appendChild(phoneNumberInput);
+
+                const weeklyAmountToPay = document.createElement('label');
+                weeklyAmountToPay.for = 'weeklyAmountToPay';
+                weeklyAmountToPay.textContent = 'Weekly Amount To Pay:';
+                createForm.appendChild(weeklyAmountToPay);
+
+                const weeklyAmountToPayInput = document.createElement('input');
+                weeklyAmountToPayInput.type = 'number';
+                weeklyAmountToPayInput.id = 'weeklyAmountToPay';
+                weeklyAmountToPayInput.required = true;
+                createForm.appendChild(weeklyAmountToPayInput);
+
+                const active = document.createElement('label');
+                active.for = 'active';
+                active.textContent = 'Active:';
+                createForm.appendChild(active);
+
+                const activeInput = document.createElement('input');
+                activeInput.type = 'checkbox';
+                activeInput.id = 'active';
+                activeInput.required = true;
+                createForm.appendChild(activeInput);
+
+                
+
+                const createButton = document.createElement('button');
+                createButton.type = 'submit';
+                createButton.textContent = 'Create';
+                createForm.appendChild(createButton);
+
+                createForm.addEventListener('submit', function (event) {
+                    event.preventDefault();
+
+                    const worker_id = document.getElementById('worker_id').value;
+                    const name = document.getElementById('name').value;
+                    const email = document.getElementById('email').value;
+                    const phoneNumber = document.getElementById('phoneNumber').value;
+                    const weeklyAmountToPay = document.getElementById('weeklyAmountToPay').value;
+                    const active = document.getElementById('active').checked;
+
+                    const gigWorker = {
+                        worker_id: `${worker_id}`,
+                        name: name,
+                        email: email,
+                        phoneNumber: phoneNumber,
+                        weeklyAmountToPay: weeklyAmountToPay,
+                        active: active
+                    };
+
+                    fetch('api/gig/gig-workers', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(gigWorker)
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert(data.message);
+                                createForm.reset();
+                            } else {
+                                alert('Failed to create gig worker');
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            alert('Server error');
+                        });
+                });
+
+                formContainer.appendChild(createForm);
+            } else if (selectedOperation === 'get-all') {
+                const getAllButton = document.createElement('button');
+                getAllButton.textContent = 'Get All';
+
+                getAllButton.addEventListener('click', function () {
+                    fetch('api/gig/gig-workers')
+                        .then(response => response.json())
+                        .then(data => {
+                            let gigWorkersHTML = '';
+                            data.forEach(gigWorker => {
+                                gigWorkersHTML += `<p>Rider ID: ${gigWorker.worker_id}, Name: ${gigWorker.name}, Email: ${gigWorker.email}, Phone Number: ${gigWorker.phoneNumber}, Weekly Amount To Pay : ${gigWorker.weeklyAmountToPay}, Active: ${gigWorker.active}</p>`;
+                            });
+                            gigWorkersContainer.innerHTML = gigWorkersHTML;
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            alert('Server error');
+                        });
+                });
+
+                formContainer.appendChild(getAllButton);
+            } else if (selectedOperation === 'bulk-activate') {
+                document.getElementById('bulk_section2').style.display = 'block';
+                document.getElementById('invoiceForm2').addEventListener('submit', async function (event) {
+                    event.preventDefault();
+                    try {
+                        const response = await fetch('/api/gig/gig-workers/bulk-active', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                "gig_workers": invoiceData2
+                            })
+                        });
+                        const data = await response.json();
+                        if (response.status === 200) {
+                            document.getElementById('message').innerText = 'Activation done successfully';
+                        } else {
+                            document.getElementById('message').innerText = 'Failed to create invoice : ' + data.error.message;
+                        }
+                    } catch (error) {
+                        document.getElementById('message').innerText = 'Failed to create invoice';
+                        console.error('Error creating invoice:', error);
+                    }
+                });
+            }
+        });
+
+
+        function convertToJson2() {
+            const fileInput = document.getElementById('xlsxFile');
+            const file = fileInput.files[0];
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+
+                const originalData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                var headerRow = originalData[0];
+
+                // Creating a new array to store the converted JSON objects
+                var convertedData = [];
+
+                // Loop through the original data rows starting from index 1 (skipping the header)
+                for (var i = 1; i < originalData.length; i++) {
+                    var row = originalData[i];
+                    var obj = {};
+
+                    // Loop through each cell in the row
+                    for (var j = 0; j < row.length; j++) {
+                        // Assign the value to the corresponding key from the header row
+                        if (headerRow[j] === "customer_id") {
+                            obj[headerRow[j]] = `${row[j]}`;
+                        } else {
+                            obj[headerRow[j]] = row[j];
+                        }
+                    }
+
+                    // Add the converted object to the new array
+                    convertedData.push(obj);
+                }
+                invoiceData2 = JSON.stringify(convertedData, null, 2);
+
+                const jsonOutput = document.getElementById('jsonOutput2');
+                jsonOutput.innerText = JSON.stringify(convertedData, null, 2);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+</body>
+
+</html>
