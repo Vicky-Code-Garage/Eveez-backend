@@ -11,19 +11,19 @@ const gigWorkerSchema = new mongoose.Schema({
     },
     vehicle_no: {
         type: String,
-        required: true,
+        default: null,
     },
     phoneNumber: {
-        type: Number,
-        required: true,
+        type: String,
+        default: null,
     },
     organization: {
         type: String,
-        required: true,
+        default: null,
     },
     plan: {
         type: String,
-        required: true,
+        default: null,
     },
     rent: {
         type: Number,
@@ -31,7 +31,7 @@ const gigWorkerSchema = new mongoose.Schema({
     },
     join_date: {
         type: String,
-        required: true,
+        default: null,
     },
     return_date: {
         type: String,

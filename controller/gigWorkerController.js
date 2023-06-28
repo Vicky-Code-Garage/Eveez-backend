@@ -207,11 +207,11 @@ router.post('/gig-workers/bulk-active', async (req, res) => {
   logroute(req)
   try {
     const gig_workers = JSON.parse(req.body.gig_workers);
-    gig_workers.forEach( async (gig_worker) => {
+    gig_workers.forEach(async (gig_worker) => {
       const gigWorkers = await GigWorker.findOne({
         worker_id: gig_worker.worker_id
       });
-      if(gigWorkers) {
+      if (gigWorkers) {
         gigWorkers.status = gig_worker.status;
         await gigWorkers.save();
       }
@@ -219,6 +219,67 @@ router.post('/gig-workers/bulk-active', async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Gig workers status updated'
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.post('/gig-workers/bulk-update', async (req, res) => {
+  logroute(req)
+  try {
+    const gig_workers = JSON.parse(req.body.gig_workers);
+    gig_workers.forEach(async (gig_worker) => {
+      if (gig_worker.worker_id && gig_worker.name) {
+        const gigWorkers = await GigWorker.findOne({
+          worker_id: gig_worker.worker_id
+        });
+        if (!gigWorkers) {
+          await GigWorker.create({
+            worker_id: gig_worker.worker_id,
+            name: gig_worker.name,
+            vehicle_no: gig_worker.vehicle_no,
+            phoneNumber: gig_worker.phoneNumber,
+            organization: gig_worker.organization,
+            plan: gig_worker.plan,
+            join_date: gig_worker.join_date,
+            weeklyPayments: [],
+            weeklyAmountToPay: gig_worker.weeklyAmountToPay,
+            status: gig_worker.status
+
+          });
+        } else {
+          gigWorkers.name = gig_worker.name ? gig_worker.name : gigWorkers.name;
+          gigWorkers.vehicle_no = gig_worker.vehicle_no ? gig_worker.vehicle_no : gigWorkers.vehicle_no;
+          gigWorkers.phoneNumber = gig_worker.phoneNumber ? gig_worker.phoneNumber : gigWorkers.phoneNumber;
+          gigWorkers.organization = gig_worker.organization ? gig_worker.organization : gigWorkers.organization;
+          gigWorkers.plan = gig_worker.plan ? gig_worker.plan : gigWorkers.plan;
+          gigWorkers.join_date = gig_worker.join_date ? gig_worker.join_date : gigWorkers.join_date;
+          gigWorkers.weeklyAmountToPay = gig_worker.weeklyAmountToPay ? gig_worker.weeklyAmountToPay : gigWorkers.weeklyAmountToPay;
+          gigWorkers.status = gig_worker.status ? gig_worker.status : gigWorkers.status;
+          await gigWorkers.save();
+        }
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Gig workers status updated'
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.post('/gig-workers/bulk-delete', async (req, res) => {
+  logroute(req)
+  try {
+    await GigWorker.deleteMany({});
+    res.status(200).json({
+      success: true,
+      message: 'Gig workers deleted'
     });
   } catch (error) {
     console.error(error);
