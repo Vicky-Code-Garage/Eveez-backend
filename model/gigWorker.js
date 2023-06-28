@@ -4,20 +4,38 @@ const gigWorkerSchema = new mongoose.Schema({
     worker_id: {
         type: String,
         required: true,
-        unique: true,
     },
     name: {
         type: String,
         required: true,
     },
-    email: {
+    vehicle_no: {
         type: String,
         required: true,
-        unique: true,
     },
     phoneNumber: {
+        type: Number,
+        required: true,
+    },
+    organization: {
         type: String,
         required: true,
+    },
+    plan: {
+        type: String,
+        required: true,
+    },
+    rent: {
+        type: Number,
+        default: 0,
+    },
+    join_date: {
+        type: String,
+        required: true,
+    },
+    return_date: {
+        type: String,
+        default: null,
     },
     weeklyPayments: [{
         razorpay_orderid: {
@@ -47,11 +65,11 @@ const gigWorkerSchema = new mongoose.Schema({
     }],
     weeklyAmountToPay: {
         type: Number,
-        required: true,
+        default: 0,
     },
-    active: {
-        type: Boolean,
-        default: false,
+    status: {
+        type: String,
+        default: 'Deactive',
     },
 });
 

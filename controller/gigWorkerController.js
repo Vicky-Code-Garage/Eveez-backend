@@ -72,11 +72,13 @@ router.put('/gig-workers/:id', async (req, res) => {
 // Delete a gig worker by ID
 router.delete('/gig-workers/:id', async (req, res) => {
   try {
-    const gigWorker = await GigWorker.findByIdAndRemove(req.params.id);
+    const gigWorker = await GigWorker.findOneAndDelete({
+      worker_id: `${req.params.id}`
+    });
     if (!gigWorker) {
       return res.status(404).json({ error: 'Gig worker not found' });
     }
-    res.sendStatus(204);
+    res.status(200).json({ success: true, message: 'Gig worker deleted' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
@@ -128,11 +130,11 @@ async function verifyPayment(req, res) {
 router.post('/weekly-payments', async (req, res) => {
   try {
     const { worker_id, weeklyPayment } = req.body;
-    const gigWorker = await GigWorker.findOne({worker_id});
+    const gigWorker = await GigWorker.findOne({ worker_id });
     if (!gigWorker) {
       return res.status(404).json({ error: 'Gig worker not found' });
     }
-    if(!gigWorker.weeklyPayments) {
+    if (!gigWorker.weeklyPayments) {
       gigWorker.weeklyPayments = [];
       gigWorker.weeklyPayments.push(weeklyPayment);
     }
@@ -162,11 +164,11 @@ router.post('/status', async (req, res) => {
     } else if (day > 21 && day <= 31) {
       installment = 4;
     }
-    const gigWorker = await GigWorker.findOne({worker_id});
+    const gigWorker = await GigWorker.findOne({ worker_id });
     if (!gigWorker) {
       return res.status(404).json({ error: 'Gig worker not found' });
     }
-    if (gigWorker.active === false) {
+    if (gigWorker.status === 'Deactive') {
       return res.status(200).json({
         active: false,
         message: 'Gig worker is inactive'
@@ -205,17 +207,19 @@ router.post('/gig-workers/bulk-active', async (req, res) => {
   logroute(req)
   try {
     const gig_workers = JSON.parse(req.body.gig_workers);
-    const gigWorkers = await GigWorker.find();
-    gigWorkers.forEach((gigWorker) => {
-      gigWorker.active = false;
-      gig_workers.forEach((gig_worker) => {
-        if (gig_worker.worker_id.toString() === gigWorker.worker_id.toString()) {
-          gigWorker.active = true;
-        }
+    gig_workers.forEach( async (gig_worker) => {
+      const gigWorkers = await GigWorker.findOne({
+        worker_id: gig_worker.worker_id
       });
+      if(gigWorkers) {
+        gigWorkers.status = gig_worker.status;
+        await gigWorkers.save();
+      }
     });
-    await Promise.all(gigWorkers.map((gigWorker) => gigWorker.save()));
-
+    res.status(200).json({
+      success: true,
+      message: 'Gig workers status updated'
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });

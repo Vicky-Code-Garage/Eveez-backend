@@ -14,6 +14,8 @@
         <option value="create">Create</option>
         <option value="get-all">Get All</option>
         <option value="bulk-activate">Bulk Activate</option>
+        <option value="get-by-id">Get By ID</option>
+        <option value="delete-by-id">Delete by Id</option>
     </select>
 
     <div id="form-container"></div>
@@ -66,16 +68,16 @@
                 nameInput.required = true;
                 createForm.appendChild(nameInput);
 
-                const emailLabel = document.createElement('label');
-                emailLabel.for = 'email';
-                emailLabel.textContent = 'Email:';
-                createForm.appendChild(emailLabel);
+                const vehicleLabel = document.createElement('label');
+                vehicleLabel.for = 'vehicle_no';
+                vehicleLabel.textContent = 'Vehicle No.:';
+                createForm.appendChild(vehicleLabel);
 
-                const emailInput = document.createElement('input');
-                emailInput.type = 'email';
-                emailInput.id = 'email';
-                emailInput.required = true;
-                createForm.appendChild(emailInput);
+                const vehicleInput = document.createElement('input');
+                vehicleInput.type = 'text';
+                vehicleInput.id = 'vehicle_no';
+                vehicleInput.required = true;
+                createForm.appendChild(vehicleInput);
 
                 const phoneNumberLabel = document.createElement('label');
                 phoneNumberLabel.for = 'phoneNumber';
@@ -87,6 +89,39 @@
                 phoneNumberInput.id = 'phoneNumber';
                 phoneNumberInput.required = true;
                 createForm.appendChild(phoneNumberInput);
+
+                const organizationLabel = document.createElement('label');
+                organizationLabel.for = 'organization';
+                organizationLabel.textContent = 'Organization:';
+                createForm.appendChild(organizationLabel);
+
+                const organizationInput = document.createElement('input');
+                organizationInput.type = 'text';
+                organizationInput.id = 'organization';
+                organizationInput.required = true;
+                createForm.appendChild(organizationInput);
+
+                const planLabel = document.createElement('label');
+                planLabel.for = 'plan';
+                organizationLabel.textContent = 'plan:';
+                createForm.appendChild(planLabel);
+
+                const planInput = document.createElement('input');
+                planInput.type = 'text';
+                planInput.id = 'plan';
+                planInput.required = true;
+                createForm.appendChild(planInput);
+
+                const join_dateLabel = document.createElement('label');
+                join_dateLabel.for = 'join_date';
+                join_dateLabel.textContent = 'Join Date:';
+                createForm.appendChild(join_dateLabel);
+                
+                const join_dateInput = document.createElement('input');
+                join_dateInput.type = 'date';
+                join_dateInput.id = 'join_date';
+                join_dateInput.required = true;
+                createForm.appendChild(join_dateInput);
 
                 const weeklyAmountToPay = document.createElement('label');
                 weeklyAmountToPay.for = 'weeklyAmountToPay';
@@ -122,18 +157,24 @@
 
                     const worker_id = document.getElementById('worker_id').value;
                     const name = document.getElementById('name').value;
-                    const email = document.getElementById('email').value;
+                    const vehicle_no = document.getElementById('vehicle_no').value;
                     const phoneNumber = document.getElementById('phoneNumber').value;
                     const weeklyAmountToPay = document.getElementById('weeklyAmountToPay').value;
+                    const organization = document.getElementById('organization').value;
+                    const plan = document.getElementById('plan').value;
+                    const join_date = document.getElementById('join_date').value;
                     const active = document.getElementById('active').checked;
 
                     const gigWorker = {
                         worker_id: `${worker_id}`,
                         name: name,
-                        email: email,
+                        vehicle_no: vehicle_no,
                         phoneNumber: phoneNumber,
+                        organization: organization,
+                        plan: plan,
+                        join_date: join_date,
                         weeklyAmountToPay: weeklyAmountToPay,
-                        active: active
+                        status: active ? 'Active' : 'Deactive'
                     };
 
                     fetch('api/gig/gig-workers', {
@@ -167,10 +208,11 @@
                     fetch('api/gig/gig-workers')
                         .then(response => response.json())
                         .then(data => {
-                            let gigWorkersHTML = '';
+                            let gigWorkersHTML = '<table><tr><th>Worker ID</th><th>Name</th><th>Phone Number</th><th>Weekly Amount To Pay</th><th>Status</th><th>Organization</th><th>Vehicle No</th><th>Plan</th><th>Rent</th></tr>';
                             data.forEach(gigWorker => {
-                                gigWorkersHTML += `<p>Rider ID: ${gigWorker.worker_id}, Name: ${gigWorker.name}, Email: ${gigWorker.email}, Phone Number: ${gigWorker.phoneNumber}, Weekly Amount To Pay : ${gigWorker.weeklyAmountToPay}, Active: ${gigWorker.active}</p>`;
+                                gigWorkersHTML += `<tr><td>${gigWorker.worker_id}</td><td>${gigWorker.name}</td><td>${gigWorker.phoneNumber}</td><td>${gigWorker.weeklyAmountToPay}</td><td>${gigWorker.status}</td><td>${gigWorker.organization}</td><td>${gigWorker.vehicle_no}</td><td>${gigWorker.plan}</td><td>${gigWorker.rent}</td></tr>`;
                             });
+                            gigWorkersHTML += '</table>';
                             gigWorkersContainer.innerHTML = gigWorkersHTML;
                         })
                         .catch(error => {
@@ -205,6 +247,90 @@
                         console.error('Error creating invoice:', error);
                     }
                 });
+            }
+            else if(selectedOperation === 'get-by-id'){
+                const getByIdForm = document.createElement('form');
+                getByIdForm.id = 'getByIdForm';
+
+                const worker_id = document.createElement('label');
+                worker_id.for = 'worker_id';
+                worker_id.textContent = 'Worker ID:';
+                getByIdForm.appendChild(worker_id);
+                
+                const worker_idInput = document.createElement('input');
+                worker_idInput.type = 'text';
+                worker_idInput.id = 'worker_id';
+                worker_idInput.required = true;
+                getByIdForm.appendChild(worker_idInput);
+
+                const getByIdButton = document.createElement('button');
+                getByIdButton.type = 'submit';
+                getByIdButton.textContent = 'Get By ID';
+                getByIdForm.appendChild(getByIdButton);
+
+                getByIdForm.addEventListener('submit', function (event) {
+                    event.preventDefault();
+
+                    const worker_id = document.getElementById('worker_id').value;
+
+                    fetch(`api/gig/gig-worker/${worker_id}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            let gigWorkersHTML = '<table><tr><th>Worker ID</th><th>Name</th><th>Phone Number</th><th>Weekly Amount To Pay</th><th>Status</th><th>Organization</th><th>Vehicle No</th><th>Plan</th><th>Rent</th></tr>';
+                            gigWorkersHTML += `<tr><td>${data.worker_id}</td><td>${data.name}</td><td>${data.phoneNumber}</td><td>${data.weeklyAmountToPay}</td><td>${data.status}</td><td>${data.organization}</td><td>${data.vehicle_no}</td><td>${data.plan}</td><td>${data.rent}</td></tr>`;
+                            gigWorkersHTML += '</table>';
+                            gigWorkersContainer.innerHTML = gigWorkersHTML;
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            alert('Server error');
+                        });
+                });
+
+                formContainer.appendChild(getByIdForm);
+            }
+            else if(selectedOperation === 'delete-by-id'){
+                const deleteByIdForm = document.createElement('form');
+                
+                const worker_id = document.createElement('label');
+                worker_id.for = 'worker_id';
+                worker_id.textContent = 'Worker ID:';
+                deleteByIdForm.appendChild(worker_id);
+
+                const worker_idInput = document.createElement('input');
+                worker_idInput.type = 'text';
+                worker_idInput.id = 'worker_id';
+                worker_idInput.required = true;
+                deleteByIdForm.appendChild(worker_idInput);
+
+                const deleteByIdButton = document.createElement('button');
+                deleteByIdButton.type = 'submit';
+                deleteByIdButton.textContent = 'Delete By ID';
+                deleteByIdForm.appendChild(deleteByIdButton);
+
+                deleteByIdForm.addEventListener('submit', function (event) {
+                    event.preventDefault();
+
+                    const worker_id = document.getElementById('worker_id').value;
+
+                    fetch(`api/gig/gig-workers/${worker_id}`, {
+                        method: 'DELETE'
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            let gigWorkersHTML = '<table><tr><th>Worker ID</th><th>Name</th><th>Phone Number</th><th>Weekly Amount To Pay</th><th>Status</th><th>Organization</th><th>Vehicle No</th><th>Plan</th><th>Rent</th></tr>';
+                            gigWorkersHTML += `<tr><td>${data.worker_id}</td><td>${data.name}</td><td>${data.phoneNumber}</td><td>${data.weeklyAmountToPay}</td><td>${data.status}</td><td>${data.organization}</td><td>${data.vehicle_no}</td><td>${data.plan}</td><td>${data.rent}</td></tr>`;
+                            gigWorkersHTML += '</table>';
+                            gigWorkersContainer.innerHTML = gigWorkersHTML;
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            alert('Server error');
+                        });
+                });
+
+                formContainer.appendChild(deleteByIdForm);
+
             }
         });
 
