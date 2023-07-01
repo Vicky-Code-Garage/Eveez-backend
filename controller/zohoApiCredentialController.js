@@ -266,7 +266,6 @@ async function createSingleInvoice(req, res) {
         const {
             customer_id,
             invoice_no,
-            place_of_supply,
             item_name,
             item_desc,
             rate,
@@ -306,7 +305,6 @@ async function createSingleInvoice(req, res) {
                 ],
             },
             allow_partial_payments: false,
-            place_of_supply: place_of_supply,
             custom_fields: [
                 {
                     index: 1,
@@ -606,7 +604,6 @@ async function createInvoice(req, res) {
                 customer_id,
                 to_email_id,
                 cc_email_ids,
-                place_of_supply,
                 day,
                 month,
                 year,
@@ -648,7 +645,6 @@ async function createInvoice(req, res) {
                     ]
                 },
                 allow_partial_payments: false,
-                place_of_supply: place_of_supply,
                 custom_fields: [
                     {
                         index: 1,
