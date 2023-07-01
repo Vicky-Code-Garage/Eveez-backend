@@ -51,10 +51,14 @@
             <input type="text" id="cc_email_id" name="cc_email_id"  required><br><br>
             <label for="place_of_supply2">Place of Supply</label>
             <input type="text" id="place_of_supply2" name="place_of_supply2"  required><br><br>
+            <label for="day2">Date</label>
+            <input type="text" id="day2" name="date2"  required><br><br>
             <label for="month2">month</label>
             <input type="text" id="month2" name="month2"  required><br><br>
             <label for="year2">year</label>
             <input type="text" id="year2" name="year2"  required><br><br>
+            <label for="branch2">Branch</label>
+            <input type="text" id="branch2" name="branch2"  required><br><br>
             <input type="submit" value="Create Invoice">
         </form><br><br>
     </section>
@@ -91,8 +95,6 @@
             <input type="text" id="shippingzip" name="shippingzip"  required><br><br>
             <label for="shippingcountry">Country :</label>
             <input type="text" id="shippingcountry" name="shippingcountry"  required><br><br>
-            <label for="gst_treatment">GST Treatment</label>
-            <input type="text" id="gst_treatment" name="gst_treatment"  required><br><br>
             <label for="gst_no">GST No</label>
             <input type="text" id="gst_no" name="gst_no"  required><br><br>
             <h2>Invoice Details</h2><br>
@@ -112,10 +114,14 @@
             <input type="text" id="cc_email_id2" name="cc_email_id2"  required><br><br>
             <label for="place_of_supply">Place of Supply</label>
             <input type="text" id="place_of_supply" name="place_of_supply"  required><br><br>
+            <label for="day">Day</label>
+            <input type="text" id="day" name="day"  required><br><br>
             <label for="month">Month</label>
             <input type="text" id="month" name="month"  required><br><br>
             <label for="year">Year</label>
             <input type="text" id="year" name="year"  required><br><br>
+            <label for="branch">Branch</label>
+            <input type="text" id="branch" name="branch"  required><br><br>
             <input type="submit" value="Create Invoice">
         </form><br><br>
     </section>
@@ -217,8 +223,10 @@
             let to_email_id = document.getElementById('to_email_id').value;
             let cc_email_id = document.getElementById('cc_email_id').value;
             let place_of_supply = document.getElementById('place_of_supply2').value;
+            let day = document.getElementById('day2').value;
             let month = document.getElementById('month2').value;
             let year = document.getElementById('year2').value;
+            let branch = document.getElementById('branch2').value;
             try {
                 const response = await fetch('/api/zoho/createsingleinvoice', {
                     method: 'POST',
@@ -231,12 +239,14 @@
                         "item_name": item_name,
                         "quantity": quantity,
                         "rate": rate,
-                        "description": description,
+                        "item_desc": description,
                         "to_email_id": to_email_id,
                         "cc_email_ids": cc_email_id,
                         "place_of_supply": place_of_supply,
+                        "day": day,
                         "month": month,
-                        "year": year
+                        "year": year,
+                        "branch": branch
                     })
                 });
                 const data = await response.json();
@@ -267,7 +277,6 @@
             let shippingstate = document.getElementById('shippingstate').value;
             let shippingzip = document.getElementById('shippingzip').value;
             let shippingcountry = document.getElementById('shippingcountry').value;
-            let gst_treatment = document.getElementById('gst_treatment').value;
             let place_of_supply = document.getElementById('place_of_supply').value;
             let gst_no = document.getElementById('gst_no').value;
             let invoice_no = document.getElementById('invoice_no').value;
@@ -278,8 +287,10 @@
             let to_email_id = document.getElementById('to_email_id2').value;
             let cc_email_id = document.getElementById('cc_email_id2').value;
             let customersubid = document.getElementById('customersubid').value;
+            let day = document.getElementById('day').value;
             let month = document.getElementById('month').value;
             let year = document.getElementById('year').value;
+            let branch = document.getElementById('branch').value;
 
             try {
                 const response = await fetch('/api/zoho/createsingleinvoicenew', {
@@ -301,19 +312,20 @@
                         "ship_state": shippingstate,
                         "ship_zip": shippingzip,
                         "ship_country": shippingcountry,
-                        "gst_treatment": gst_treatment,
                         "gst_no": gst_no,
                         "suscriber_id" : "123",
                         "invoice_no": invoice_no,
                         "item_name": item_name,
                         "quantity": quantity,
                         "rate": rate,
-                        "description": description,
+                        "item_desc": description,
                         "to_email_id": to_email_id,
                         "cc_email_ids": cc_email_id,
                         "place_of_supply": place_of_supply,
+                        "day": day,
                         "month": month,
-                        "year": year
+                        "year": year,
+                        "branch": branch
                     })
                 });
                 const data = await response.json();
