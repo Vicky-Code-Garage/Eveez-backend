@@ -320,6 +320,7 @@ async function createSingleInvoice(req, res) {
                 },
             ],
             template_id: branch === 'KOL' ? '1300331000000278195' : branch === 'UP' ? '1300331000000278189' : branch === 'HY' ? '1300331000000278185' : branch === 'DL' ? '1300331000000278179' : branch === 'BLR' ? '1300331000000278173' : null,
+            place_of_supply: branch === 'KOL' ? '19' : branch === 'UP' ? '09' : branch === 'HY' ? '36' : branch === 'DL' ? '07' : branch === 'BLR' ? '29' : null,
         });
 
         let config = {
@@ -496,7 +497,7 @@ async function createSingleInvoiceNew(req, res) {
                 ],
             },
             allow_partial_payments: false,
-            place_of_supply: place_of_supply,
+            place_of_supply: branch === 'KOL' ? '19' : branch === 'BLR' ? '29' : branch === 'DL' ? '07' : branch === 'UP' ? '09' : branch === 'HY' ? '36' : '',
             custom_fields: [
                 {
                     index: 1,
@@ -660,6 +661,7 @@ async function createInvoice(req, res) {
                     },
                 ],
                 template_id: branch === 'KOL' ? '1300331000000278195' : branch === 'UP' ? '1300331000000278189' : branch === 'HY' ? '1300331000000278185' : branch === 'DL' ? '1300331000000278179' : branch === 'BLR' ? '1300331000000278173' : null,
+                place_of_supply: branch === 'KOL' ? '19' : branch === 'UP' ? '09' : branch === 'HY' ? '36' : branch === 'DL' ? '07' : branch === 'BLR' ? '29' : null,
             });
 
             let config = {
@@ -840,7 +842,7 @@ async function createInvoiceWithCustomers(req, res) {
                     ],
                 },
                 allow_partial_payments: false,
-                place_of_supply: place_of_supply,
+                place_of_supply: branch === 'KOL' ? '19' : branch === 'UP' ? '09' : branch === 'HY' ? '36' : branch === 'DL' ? '07' : branch === 'BLR' ? '29' : null,
                 template_id: branch === 'KOL' ? '1300331000000278195' : branch === 'UP' ? '1300331000000278189' : branch === 'HY' ? '1300331000000278185' : branch === 'DL' ? '1300331000000278179' : branch === 'BLR' ? '1300331000000278173' : null,
                 custom_fields: [
                     {
